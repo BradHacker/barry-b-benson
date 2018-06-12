@@ -1,0 +1,33 @@
+{
+  "name": "barry-b-benson",
+  "version": "1.0.0",
+  "description": "A discord bot for banning words and pasting the entire bee movie script",
+  "main": "bot.js",
+  "engines": {
+    "node": "9.11.1",
+    "npm": "5.6.0"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node bot.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/BradHacker/barry-b-benson.git"
+  },
+  "keywords": [
+    "heroku",
+    "discord.js"
+  ],
+  "license": "MIT",
+  "author": "Bradley Harker",
+  "bugs": {
+    "url": "https://github.com/BradHacker/barry-b-benson/issues"
+  },
+  "dependencies": {
+    "discord.io": "^2.5.3",
+    "discord.js": "^11.3.0",
+    "fs": "0.0.1-security",
+    "winston": "^2.4.0"
+  }
+}
