@@ -57,7 +57,7 @@ client.on('message', message => {
         })
       }
       if(command === "help") {
-        message.channel.send('**Barry B. Benson Bot Help**\n`ban: words` - bans words after the `:`, use commas to separate words/phrases\n`unban: words` - unbans words  after the `:` if they are currently in ban list, use commas to separate words/phrases\n`list all:` - lists all currently banned words\n`set timeout: number` - sets bot message tiemout in seconds\n`help:` - dsiplays this help screen')
+        message.channel.send('**Barry B. Benson Bot Help**\n`ban: words` - bans words after the `:`, use commas to separate words/phrases\n`unban: words` - unbans words  after the `:` if they are currently in ban list, use commas to separate words/phrases\n`list all:` - lists all currently banned words\n`set timeout: number` - sets bot message tiemout in seconds\n`help:` - displays this help screen\n`join:` - joins a voice channel\n`play: kewords` - plays music fro, youtube related to keywords after the :\n`resetQueue:` - resets the music queue')
       }
       if(command === "join") {
         message.reply("Attempting to join channel: " + args[0]);
@@ -65,6 +65,9 @@ client.on('message', message => {
       }
       if(command === "play") {
         PlayCommand(args.join(" "), message);
+      }
+      if(command === "resetQueue") {
+        ResetMusicQueue();
       }
     }
   }
@@ -291,4 +294,8 @@ function PlayStream(streamUrl) {
         }
       })
   }
+}
+
+function ResetMusicQueue() {
+  ytAudioQueue = [];
 }
