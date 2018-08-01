@@ -283,7 +283,7 @@ function QueueYtAudioStream(video) {
     title: video.snippet.title
   }
 
-  ytAudioQueue.push(streamUrl);
+  ytAudioQueue.push(v);
   if(!playing) {
     PlayStream(ytAudioQueue[0]);
   }
