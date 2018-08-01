@@ -292,24 +292,29 @@ function QueueYtAudioStream(video) {
 function PlayStream(video) {
   playing = true;
   const streamOptions = {seek: 0, volume: 1};
-  console.log("Streaming audio from " + video.url);
-  let channel = client.channels.find(val => val.name.toLowerCase().includes('music'))
+  let channel = client.channels.find(val => val.name === "bman-announcements")
+  if(channel) console.log("Found announcement channel: " + channel.name);
 
   if (video && !playing) {
-      const stream = ytdl(video.url, {filter: 'audioonly'});
-      const dispatcher = client.voiceConnections.first().playStream(stream, streamOptions);
+    console.log("Streaming audio from " + video.url);
+    const stream = ytdl(video.url, {filter: 'audioonly'});
+    const dispatcher = client.voiceConnections.first().playStream(stream, streamOptions);
+    if(channel) {
       channel.send('Now Playing: ' + video.title)
-      dispatcher.on('end', () => {
-        playing = false;
-        if(ytAudioQueue > 0) {
-          ytAudioQueue.shift();
-          PlayStream(ytAudioQueue[0]);
-        } else {
-          PlayStream({
-            url: 'https://www.youtube.com/watch?v=AY3OX809dzM',
-            title: 'defualt'
-          });
-        }
-      })
+    } else {
+      console.error("Couldn't connect to announcement channel")
+    }
+    dispatcher.on('end', () => {
+      playing = false;
+      if(ytAudioQueue > 0) {
+        ytAudioQueue.shift();
+        PlayStream(ytAudioQueue[0]);
+      } else {
+        PlayStream({
+          url: 'https://www.youtube.com/watch?v=AY3OX809dzM',
+          title: 'defualt'
+        });
+      }
+    })
   }
 }
