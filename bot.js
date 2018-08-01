@@ -215,6 +215,17 @@ function JoinChannel(channel, message) {
   }
 }
 
+function ResetMusicQueue() {
+  ytAudioQueue = [];
+}
+
+function ListQueue() {
+  let queue = ""
+  for(let id of ytAudioQueue) {
+
+  }
+}
+
 // Helper functions
 
 function retrieveNonChristianWords(guildID) {
@@ -240,21 +251,19 @@ function PlayCommand(searchTerm, message) {
 }
 
 function YoutubeSearch(searchKeywords, message) {
-  var requestUrl = 'https://www.googleapis.com/youtube/v3/search' + `?part=snippet&q=${escape(searchKeywords)}&key=${process.env.API_KEY}`;
+  var requestUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&q=${escape(searchKeywords)}&key=${process.env.API_KEY}`;
 
   request(requestUrl, (error, response) => {
       if (!error && response.statusCode == 200) {
-
           var body = response.body;
           if (body.items.length == 0) {
               message.channel.send("Your search gave 0 results");
               return videoId;
           }
-
           for (var item of body.items) {
               if (item.id.kind === 'youtube#video') {
                 console.log("Queued: " + item.id.videoId)
-                  QueueYtAudioStream(item.id.videoId);
+                QueueYtAudioStream(item);
               }
           }
       }
@@ -268,34 +277,39 @@ function YoutubeSearch(searchKeywords, message) {
 }
 
 /// Queues result of Youtube search into stream
-function QueueYtAudioStream(videoId) {
-  var streamUrl = `https://www.youtube.com/watch?v=${videoId}`;
+function QueueYtAudioStream(video) {
+  let v = {
+    url: `https://www.youtube.com/watch?v=${video.id.videoId}`,
+    title: video.snippet.title
+  }
+
   ytAudioQueue.push(streamUrl);
   if(!playing) {
     PlayStream(ytAudioQueue[0]);
   }
 }
 
-function PlayStream(streamUrl) {
+function PlayStream(video) {
   playing = true;
   const streamOptions = {seek: 0, volume: 1};
-  console.log("Streaming audio from " + streamUrl);
+  console.log("Streaming audio from " + video.url);
+  let channel = client.channels.find(val => val.name.toLowerCase().includes('music'))
 
-  if (streamUrl && !playing) {
-      const stream = ytdl(streamUrl, {filter: 'audioonly'});
+  if (video && !playing) {
+      const stream = ytdl(video.url, {filter: 'audioonly'});
       const dispatcher = client.voiceConnections.first().playStream(stream, streamOptions);
+      channel.send('Now Playing: ' + video.title)
       dispatcher.on('end', () => {
         playing = false;
         if(ytAudioQueue > 0) {
           ytAudioQueue.shift();
           PlayStream(ytAudioQueue[0]);
         } else {
-          PlayStream('https://www.youtube.com/watch?v=AY3OX809dzM');
+          PlayStream({
+            url: 'https://www.youtube.com/watch?v=AY3OX809dzM',
+            title: 'defualt'
+          });
         }
       })
   }
-}
-
-function ResetMusicQueue() {
-  ytAudioQueue = [];
 }
