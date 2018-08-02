@@ -296,7 +296,7 @@ function QueueYtAudioStream(video) {
 }
 
 function PlayStream(video) {
-  const streamOptions = {seek: 0, volume: 1};
+  const streamOptions = {seek: 0, volume: 1, passes: 2, bitrate: 'auto'};
   if (video && !playing) {
     let channel = client.channels.find(val => val.name === "bman-announcements")
     if(channel) console.log("Found announcement channel: " + channel.name);
@@ -319,8 +319,8 @@ function PlayStream(video) {
           }
           //ListQueue();
         })
-        dispatcher.on('speaking', () => {
-          console.log('Speaking')
+        dispatcher.on('speaking', (speak) => {
+          console.log('Speaking: ' + speak)
         })
     } else {
       console.error("Couldn't connect to announcement channel")
