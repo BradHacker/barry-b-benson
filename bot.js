@@ -226,7 +226,7 @@ function ListQueue() {
   let queue = "Current Queue -\n"
   if (ytAudioQueue.length === 0) queue += "No Music Queued"
   for(let i = 0; i < ytAudioQueue.length; i++) {
-    queue += `${i}) ${ytAudioQueue[i].title}\n`
+    queue += `${i+1}) ${ytAudioQueue[i].title}\n`
   }
   let channel = client.channels.find(val => val.name === "bman-announcements")
   if(channel) channel.send(queue)
@@ -309,7 +309,7 @@ function PlayStream(video) {
     } else {
       console.error("Couldn't connect to announcement channel")
     }
-    dispatcher.on('end', () => {
+    dispatcher.on('speaking', () => {
       playing = false;
       if(ytAudioQueue > 0) {
         ytAudioQueue.shift();
