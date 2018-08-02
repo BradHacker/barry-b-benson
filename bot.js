@@ -294,13 +294,14 @@ function PlayStream(video) {
   const streamOptions = {seek: 0, volume: 1};
   let channel = client.channels.find(val => val.name === "bman-announcements")
   if(channel) console.log("Found announcement channel: " + channel.name);
+  if(channel) console.log(channel);
 
   if (video && !playing) {
     console.log("Streaming audio from " + video.url);
     const stream = ytdl(video.url, {filter: 'audioonly'});
     const dispatcher = client.voiceConnections.first().playStream(stream, streamOptions);
     if(channel) {
-      channel.send('Now Playing: ' + video.title)
+      channel.send('Now Playing: ' + video.title).then(() => console.log("Sent message to announcements")).catch(() => console.error("Couldn't send announcement"))
     } else {
       console.error("Couldn't connect to announcement channel")
     }
