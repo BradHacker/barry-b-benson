@@ -57,7 +57,7 @@ client.on('message', message => {
         })
       }
       if(command === "help") {
-        message.channel.send('**Barry B. Benson Bot Help**\n`ban: words` - bans words after the `:`, use commas to separate words/phrases\n`unban: words` - unbans words  after the `:` if they are currently in ban list, use commas to separate words/phrases\n`list all:` - lists all currently banned words\n`set timeout: number` - sets bot message tiemout in seconds\n`help:` - displays this help screen\n`join:` - joins a voice channel\n`play: kewords` - plays music fro, youtube related to keywords after the :\n`resetQueue:` - resets the music queue')
+        message.channel.send('**Barry B. Benson Bot Help**\n`ban: words` - bans words after the `:`, use commas to separate words/phrases\n`unban: words` - unbans words  after the `:` if they are currently in ban list, use commas to separate words/phrases\n`list all:` - lists all currently banned words\n`set timeout: number` - sets bot message tiemout in seconds\n`help:` - displays this help screen\n`join:` - joins a voice channel\n`play: kewords` - plays music fro, youtube related to keywords after the :\n`listQueue:` - lists the current music queue\n`resetQueue:` - resets the music queue')
       }
       if(command === "join") {
         message.reply("Attempting to join channel: " + args[0]);
@@ -68,6 +68,9 @@ client.on('message', message => {
       }
       if(command === "resetQueue") {
         ResetMusicQueue();
+      }
+      if(command === "listQueue") {
+        ListQueue();
       }
     }
   }
@@ -220,10 +223,13 @@ function ResetMusicQueue() {
 }
 
 function ListQueue() {
-  let queue = ""
-  for(let id of ytAudioQueue) {
-
+  let queue = "Current Queue -\n"
+  if (ytAudioQueue.length === 0) queue += "No Music Queued"
+  for(let i = 0; i < ytAudioQueue.length; i++) {
+    queue += `${i}) ${ytAudioQueue[i].title}\n`
   }
+  let channel = client.channels.find(val => val.name === "bman-announcements")
+  if(channel) channel.send(queue)
 }
 
 // Helper functions
@@ -294,7 +300,6 @@ function PlayStream(video) {
   if (video && !playing) {
     let channel = client.channels.find(val => val.name === "bman-announcements")
     if(channel) console.log("Found announcement channel: " + channel.name);
-    if(channel) console.log(channel);
     playing = true;
     console.log("Streaming audio from " + video.url);
     const stream = ytdl(video.url, {filter: 'audioonly'});
@@ -309,12 +314,8 @@ function PlayStream(video) {
       if(ytAudioQueue > 0) {
         ytAudioQueue.shift();
         PlayStream(ytAudioQueue[0]);
-      } else {
-        PlayStream({
-          url: 'https://www.youtube.com/watch?v=AY3OX809dzM',
-          title: 'defualt'
-        });
       }
+      ListQueue();
     })
   }
 }
