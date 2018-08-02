@@ -5,6 +5,7 @@ const client = new Discord.Client();
 const config = require('./config.json')
 const beeMovie = require('./beeMovieScript.json')
 const fs = require('fs');
+const moment = require('moment');
 require('dotenv').config();
 
 let non_christian_words = [];
@@ -57,7 +58,7 @@ client.on('message', message => {
         })
       }
       if(command === "help") {
-        message.channel.send('**Barry B. Benson Bot Help**\n`ban: words` - bans words after the `:`, use commas to separate words/phrases\n`unban: words` - unbans words  after the `:` if they are currently in ban list, use commas to separate words/phrases\n`list all:` - lists all currently banned words\n`set timeout: number` - sets bot message tiemout in seconds\n`help:` - displays this help screen\n`join:` - joins a voice channel\n`play: kewords` - plays music fro, youtube related to keywords after the :\n`listQueue:` - lists the current music queue\n`resetQueue:` - resets the music queue')
+        message.channel.send(config.helpText.join('\n'))
       }
       if(command === "join") {
         message.reply("Attempting to join channel: " + args[0]);
@@ -219,11 +220,13 @@ function JoinChannel(channel, message) {
 }
 
 function ResetMusicQueue() {
-  ytAudioQueue = [];
+  if(playing) {
+    ytAudioQueue.splice(1, ytAudioQueue.length - 1)
+  }
 }
 
 function ListQueue() {
-  let queue = "Current Queue -\n"
+  let queue = playing ? `\u1F3A7 - ${ytAudioQueue[0].title}\nQueue -\n` : '\u1F3A7 - Nothing is playing\nQueue -\n'
   if (ytAudioQueue.length === 0) queue += "No Music Queued"
   for(let i = 0; i < ytAudioQueue.length; i++) {
     queue += `${i+1}) ${ytAudioQueue[i].title}\n`
@@ -257,9 +260,9 @@ function PlayCommand(searchTerm, message) {
 }
 
 function YoutubeSearch(searchKeywords, message) {
-  var requestUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&q=${escape(searchKeywords)}&key=${process.env.API_KEY}`;
+  let snippetUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&q=${escape(searchKeywords)}&key=${process.env.API_KEY}`;
 
-  request(requestUrl, (error, response) => {
+  request(snippetUrl, (error, response) => {
       if (!error && response.statusCode == 200) {
           var body = response.body;
           if (body.items.length == 0) {
@@ -268,8 +271,17 @@ function YoutubeSearch(searchKeywords, message) {
           }
           for (var item of body.items) {
               if (item.id.kind === 'youtube#video') {
-                console.log("Queued: " + item.id.videoId)
-                QueueYtAudioStream(item);
+                let detailsUrl = `https://www.googleapis.com/youtube/v3/videos?id=${item.id.videoId}part=contentDetails&key=${process.env.API_KEY}`;
+                request(detailsUrl, (error, response) => {
+                  if(!error && response.statusCode == 200) {
+                    if (moment.duration(response.body.items[0].contentDetails.duration).minutes() < 5) {
+                      console.log("Queued: " + item.id.videoId);
+                      QueueYtAudioStream(item);
+                    } else {
+                      console.error(`Video ${item.id.videoId} is longer than 5 mins`);
+                    }
+                  }
+                })
               }
           }
       }

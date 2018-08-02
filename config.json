@@ -1,1 +1,15 @@
-{"deleteTimeout":8}
+{
+  "deleteTimeout": 8,
+  "helpText": [
+    "**Barry B. Benson Bot Help**",
+    "`ban: words` - bans words after the `:`, use commas to separate words/phrases",
+    "`unban: words` - unbans words  after the `:` if they are currently in ban list, use commas to separate words/phrases",
+    "`list all:` - lists all currently banned words",
+    "`set timeout: number` - sets bot message tiemout in seconds",
+    "`help:` - displays this help screen",
+    "`join:` - joins a voice channel",
+    "`play: kewords` - plays music from youtube related to keywords after the :, limited to 5 min videos for server load reasons",
+    "`listQueue:` - lists the current music queue",
+    "`resetQueue:` - resets the music queue"
+  ]
+}
