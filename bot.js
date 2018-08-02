@@ -290,13 +290,12 @@ function QueueYtAudioStream(video) {
 }
 
 function PlayStream(video) {
-  playing = true;
   const streamOptions = {seek: 0, volume: 1};
-  let channel = client.channels.find(val => val.name === "bman-announcements")
-  if(channel) console.log("Found announcement channel: " + channel.name);
-  if(channel) console.log(channel);
-
   if (video && !playing) {
+    let channel = client.channels.find(val => val.name === "bman-announcements")
+    if(channel) console.log("Found announcement channel: " + channel.name);
+    if(channel) console.log(channel);
+    playing = true;
     console.log("Streaming audio from " + video.url);
     const stream = ytdl(video.url, {filter: 'audioonly'});
     const dispatcher = client.voiceConnections.first().playStream(stream, streamOptions);
