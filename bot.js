@@ -313,7 +313,7 @@ function PlayStream(video) {
             ytAudioQueue.shift();
             PlayStream(ytAudioQueue[0]);
           }
-          ListQueue();
+          //ListQueue();
         })
       }).catch(() => {
         console.error("Couldn't send announcement")
