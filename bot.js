@@ -301,21 +301,29 @@ function PlayStream(video) {
     let channel = client.channels.find(val => val.name === "bman-announcements")
     if(channel) console.log("Found announcement channel: " + channel.name);
     playing = true;
-    console.log("Streaming audio from " + video.url);
-    const stream = ytdl(video.url, {filter: 'audioonly'});
-    const dispatcher = client.voiceConnections.first().playStream(stream, streamOptions);
     if(channel) {
-      channel.send('Now Playing: ' + video.title).then(() => console.log("Sent message to announcements")).catch(() => console.error("Couldn't send announcement"))
+      channel.send('Now Playing: ' + video.title).then(() => {
+        console.log("Sent message to announcements")
+        console.log("Streaming audio from " + video.url);
+        const stream = ytdl(video.url, {filter: 'audioonly'});
+        const dispatcher = client.voiceConnections.first().playStream(stream, streamOptions);
+        dispatcher.on('end', () => {
+          playing = false;
+          if(ytAudioQueue > 0) {
+            ytAudioQueue.shift();
+            PlayStream(ytAudioQueue[0]);
+          }
+          ListQueue();
+        })
+      }).catch(() => {
+        console.error("Couldn't send announcement")
+      })
     } else {
       console.error("Couldn't connect to announcement channel")
-    }
-    dispatcher.on('speaking', () => {
-      playing = false;
-      if(ytAudioQueue > 0) {
-        ytAudioQueue.shift();
-        PlayStream(ytAudioQueue[0]);
+      let channel = client.channels.find(val => val.name.toLower() === "general")
+      if(channel) {
+        channel.send("Please create a text channel called: `bman-announcements`")
       }
-      ListQueue();
-    })
+    }
   }
 }
