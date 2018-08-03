@@ -271,7 +271,7 @@ function YoutubeSearch(searchKeywords, message) {
           }
           for (var item of body.items) {
               if (item.id.kind === 'youtube#video') {
-                let detailsUrl = `https://www.googleapis.com/youtube/v3/videos?id=${item.id.videoId}part=contentDetails&key=${process.env.API_KEY}`;
+                let detailsUrl = `https://www.googleapis.com/youtube/v3/videos?id=${item.id.videoId}&part=contentDetails&key=${process.env.API_KEY}`;
                 request(detailsUrl, (error, response) => {
                   console.log(response)
                   if(!error && response.statusCode == 200) {
