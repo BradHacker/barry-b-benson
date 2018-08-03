@@ -222,6 +222,8 @@ function JoinChannel(channel, message) {
 function ResetMusicQueue() {
   if(playing) {
     ytAudioQueue.splice(1, ytAudioQueue.length - 1)
+  } else {
+    ytAudioQueue = []
   }
 }
 
