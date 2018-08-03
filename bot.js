@@ -39,10 +39,10 @@ client.on('message', message => {
         beeMovieScript(message)
       }
       if(command === "unban") {
-        unbanWords(message, args)
+        unbanWords(message, args, guildID)
       }
       if(command === "ban") {
-        banWords(message, args)
+        banWords(message, args, guildID)
       }
       if(command === "list all") {
         if(non_christian_words.length > 0) {
@@ -146,7 +146,7 @@ function beeMovieScript(message) {
   return;
 }
 
-function unbanWords(message, args) {
+function unbanWords(message, args, guildID) {
   if(args.length > 0) {
     let unbanned_words = [];
     for(let i = 0; i < args.length; i++) {
@@ -177,7 +177,7 @@ function unbanWords(message, args) {
   }
 }
 
-function banWords(message, args) {
+function banWords(message, args, guildID) {
   if(args.length > 0) {
     let banned_words = [];
     for(let i = 0; i < args.length; i++) {
