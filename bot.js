@@ -226,7 +226,7 @@ function ResetMusicQueue() {
 }
 
 function ListQueue() {
-  let queue = playing ? `\u1F3A7 - ${ytAudioQueue[0].title}\nQueue -\n` : '\u1F3A7 - Nothing is playing\nQueue -\n'
+  let queue = playing ? `\u{1F3A7} - ${ytAudioQueue[0].title}\nQueue -\n` : '\u1F3A7 - Nothing is playing\nQueue -\n'
   if (ytAudioQueue.length === 0) queue += "No Music Queued"
   for(let i = 0; i < ytAudioQueue.length; i++) {
     queue += `${i+1}) ${ytAudioQueue[i].title}\n`
@@ -273,7 +273,9 @@ function YoutubeSearch(searchKeywords, message) {
               if (item.id.kind === 'youtube#video') {
                 let detailsUrl = `https://www.googleapis.com/youtube/v3/videos?id=${item.id.videoId}part=contentDetails&key=${process.env.API_KEY}`;
                 request(detailsUrl, (error, response) => {
+                  console.log(response)
                   if(!error && response.statusCode == 200) {
+                    console.log(`Duration: ${moment.duration(response.body.items[0].contentDetails.duration).minutes()} id: ${item.id.videoId}`)
                     if (moment.duration(response.body.items[0].contentDetails.duration).minutes() < 5) {
                       console.log("Queued: " + item.id.videoId);
                       QueueYtAudioStream(item);
