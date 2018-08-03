@@ -232,7 +232,7 @@ function ListQueue() {
   if (ytAudioQueue.length === 0) queue += "No Music Queued"
   for(let i = 1; i < ytAudioQueue.length; i++) {
     let song = ytAudioQueue[i]
-    queue += `${i}) ${song.title} - ${song.duration.format('mm:ss')}\n`
+    queue += `${i}) ${song.title} - ${song.duration.minutes()}:${song.duration.seconds() < 10 ? "0" + song.duration.seconds() : song.duration.seconds()}\n`
   }
   let channel = client.channels.find(val => val.name === "bman-announcements")
   if(channel) channel.send(queue)
@@ -280,7 +280,7 @@ function YoutubeSearch(searchKeywords, message) {
                   //console.log(response)
                   if(!error && response.statusCode == 200) {
                     let duration = moment.duration(response.body.items[0].contentDetails.duration);
-                    console.log(`Duration: ${duration.format('mm:ss')} id: ${i.id.videoId}`)
+                    console.log(`Duration: ${duration.minutes()}:${duration.seconds() < 10 ? "0" + duration.seconds() : duration.seconds()} id: ${i.id.videoId}`)
                     if (duration.minutes() < 5 && duration.minutes() > 0) {
                       console.log("Queued: " + i.id.videoId);
                       let v = i
