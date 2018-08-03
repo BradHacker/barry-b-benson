@@ -273,7 +273,7 @@ function YoutubeSearch(searchKeywords, message) {
               return videoId;
           }
           for (var item of body.items) {
-              if (i.id.kind === 'youtube#video') {
+              if (item.id.kind === 'youtube#video') {
                 let i = item;
                 let detailsUrl = `https://www.googleapis.com/youtube/v3/videos?id=${i.id.videoId}&part=contentDetails&key=${process.env.API_KEY}`;
                 request(detailsUrl, (error, response) => {
