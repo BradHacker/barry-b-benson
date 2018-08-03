@@ -226,7 +226,7 @@ function ResetMusicQueue() {
 }
 
 function ListQueue() {
-  let queue = playing ? `\u{1F3A7} - ${ytAudioQueue[0].title}\nQueue -\n` : '\u1F3A7 - Nothing is playing\nQueue -\n'
+  let queue = playing ? `${fixedFromCharCode(0x1F3A7)} - ${ytAudioQueue[0].title}\nQueue -\n` : '\u1F3A7 - Nothing is playing\nQueue -\n'
   if (ytAudioQueue.length === 0) queue += "No Music Queued"
   for(let i = 0; i < ytAudioQueue.length; i++) {
     queue += `${i+1}) ${ytAudioQueue[i].title}\n`
@@ -272,12 +272,19 @@ function YoutubeSearch(searchKeywords, message) {
           for (var item of body.items) {
               if (item.id.kind === 'youtube#video') {
                 let detailsUrl = `https://www.googleapis.com/youtube/v3/videos?id=${item.id.videoId}&part=contentDetails&key=${process.env.API_KEY}`;
+                let i = item;
                 request(detailsUrl, (error, response) => {
-                  console.log(response)
+                  //console.log(response)
                   if(!error && response.statusCode == 200) {
                     console.log(`Duration: ${moment.duration(response.body.items[0].contentDetails.duration).minutes()} id: ${item.id.videoId}`)
-                    if (moment.duration(response.body.items[0].contentDetails.duration).minutes() < 5) {
-                      console.log("Queued: " + item.id.videoId);
+                    let duration = moment.duration(response.body.items[0].contentDetails.duration)
+                    if (duration.minutes() < 5) {
+                      console.log("Queued: " + i.id.videoId);
+                      let v = i
+                      v.duration = {
+                        minutes: duration.minutes(),
+                        seconds: duration.seconds()
+                      }
                       QueueYtAudioStream(item);
                     } else {
                       console.error(`Video ${item.id.videoId} is longer than 5 mins`);
@@ -312,11 +319,11 @@ function QueueYtAudioStream(video) {
 function PlayStream(video) {
   const streamOptions = {seek: 0, volume: 1, passes: 2, bitrate: 'auto'};
   if (video && !playing) {
-    let channel = client.channels.find(val => val.name === "bman-announcements")
-    if(channel) console.log("Found announcement channel: " + channel.name);
+    let announcementChannel = client.channels.find(val => val.name === "bman-announcements")
+    if(announcementChannel) console.log("Found announcement channel: " + announcementChannel.name);
     playing = true;
-    if(channel) {
-      channel.send('Now Playing: ' + video.title).then(() => {
+    if(announcementChannel) {
+      announcementChannel.send('Now Playing: ' + video.title).then(() => {
         console.log("Sent message to announcements")
       }).catch(() => {
         console.error("Couldn't send announcement")
@@ -325,16 +332,14 @@ function PlayStream(video) {
         const stream = ytdl(video.url, {filter: 'audioonly'});
         const dispatcher = client.voiceConnections.first().playStream(stream, streamOptions);
         dispatcher.on('end', () => {
-          console.log('Song Ended')
           playing = false;
-          if(ytAudioQueue > 0) {
-            ytAudioQueue.shift();
+          ytAudioQueue.shift();
+          if(ytAudioQueue.length > 0) {
             PlayStream(ytAudioQueue[0]);
+          } else {
+            announcementChannel.send("Finished Music Queue")
           }
           //ListQueue();
-        })
-        dispatcher.on('speaking', (speak) => {
-          console.log('Speaking: ' + speak)
         })
     } else {
       console.error("Couldn't connect to announcement channel")
@@ -343,5 +348,15 @@ function PlayStream(video) {
         channel.send("Please create a text channel called: `bman-announcements`")
       }
     }
+  }
+}
+
+function fixedFromCharCode(codePt) {
+  if (codePt > 0xFFFF) {
+      codePt -= 0x10000;
+      return String.fromCharCode(0xD800 + (codePt >> 10), 0xDC00 + (codePt & 0x3FF));
+  }
+  else {
+      return String.fromCharCode(codePt);
   }
 }
