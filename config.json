@@ -10,6 +10,7 @@
     "`join:` - joins a voice channel",
     "`play: kewords` - plays music from youtube related to keywords after the :, limited to 5 min videos for server load reasons",
     "`listQueue:` - lists the current music queue",
-    "`resetQueue:` - resets the music queue"
+    "`resetQueue:` - resets the music queue",
+    "`skip:` - skips the current song"
   ]
 }

@@ -11,7 +11,8 @@ require('dotenv').config();
 let non_christian_words = [];
 let voiceChannel = null;
 let ytAudioQueue = [];
-let playing = false
+let playing = false;
+const dispatcher;
 
 client.on('ready', () => {
   console.log('Beam me up Scotty!');
@@ -72,6 +73,9 @@ client.on('message', message => {
       }
       if(command === "listQueue") {
         ListQueue();
+      }
+      if(command === "skip") {
+        SkipSong();
       }
     }
   }
@@ -238,6 +242,10 @@ function ListQueue() {
   if(channel) channel.send(queue)
 }
 
+function SkipSong() {
+  dispatcher.end();
+}
+
 // Helper functions
 
 function retrieveNonChristianWords(guildID) {
@@ -331,7 +339,7 @@ function PlayStream(video) {
       })
       console.log("Streaming audio from " + video.url);
         const stream = ytdl(video.url, {filter: 'audioonly'});
-        const dispatcher = client.voiceConnections.first().playStream(stream, streamOptions);
+        dispatcher = client.voiceConnections.first().playStream(stream, streamOptions);
         dispatcher.on('end', () => {
           playing = false;
           ytAudioQueue.shift();
