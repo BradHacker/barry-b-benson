@@ -230,8 +230,9 @@ function ResetMusicQueue() {
 function ListQueue() {
   let queue = playing ? `${fixedFromCharCode(0x1F3A7)} - ${ytAudioQueue[0].title}\nQueue -\n` : '\u1F3A7 - Nothing is playing\nQueue -\n'
   if (ytAudioQueue.length === 0) queue += "No Music Queued"
-  for(let i = 0; i < ytAudioQueue.length; i++) {
-    queue += `${i+1}) ${ytAudioQueue[i].title}\n`
+  for(let i = 1; i < ytAudioQueue.length; i++) {
+    let song = ytAudioQueue[i]
+    queue += `${i}) ${song.title} - ${song.duration.format('mm:ss')}\n`
   }
   let channel = client.channels.find(val => val.name === "bman-announcements")
   if(channel) channel.send(queue)
@@ -272,24 +273,21 @@ function YoutubeSearch(searchKeywords, message) {
               return videoId;
           }
           for (var item of body.items) {
-              if (item.id.kind === 'youtube#video') {
-                let detailsUrl = `https://www.googleapis.com/youtube/v3/videos?id=${item.id.videoId}&part=contentDetails&key=${process.env.API_KEY}`;
+              if (i.id.kind === 'youtube#video') {
                 let i = item;
+                let detailsUrl = `https://www.googleapis.com/youtube/v3/videos?id=${i.id.videoId}&part=contentDetails&key=${process.env.API_KEY}`;
                 request(detailsUrl, (error, response) => {
                   //console.log(response)
                   if(!error && response.statusCode == 200) {
-                    console.log(`Duration: ${moment.duration(response.body.items[0].contentDetails.duration).minutes()} id: ${item.id.videoId}`)
-                    let duration = moment.duration(response.body.items[0].contentDetails.duration)
-                    if (duration.minutes() < 5) {
+                    let duration = moment.duration(response.body.items[0].contentDetails.duration);
+                    console.log(`Duration: ${duration.format('mm:ss')} id: ${i.id.videoId}`)
+                    if (duration.minutes() < 5 && duration.minutes() > 0) {
                       console.log("Queued: " + i.id.videoId);
                       let v = i
-                      v.duration = {
-                        minutes: duration.minutes(),
-                        seconds: duration.seconds()
-                      }
-                      QueueYtAudioStream(item);
+                      v.duration = duration;
+                      QueueYtAudioStream(v);
                     } else {
-                      console.error(`Video ${item.id.videoId} is longer than 5 mins`);
+                      console.error(`Video ${i.id.videoId} is longer than 5 mins`);
                     }
                   }
                 })
