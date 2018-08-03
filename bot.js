@@ -228,8 +228,8 @@ function ResetMusicQueue() {
 }
 
 function ListQueue() {
-  let queue = playing ? `${fixedFromCharCode(0x1F3A7)} - ${ytAudioQueue[0].title}\nQueue -\n` : '\u1F3A7 - Nothing is playing\nQueue -\n'
-  if (ytAudioQueue.length === 0) queue += "No Music Queued"
+  let queue = playing ? `${fixedFromCharCode(0x1F3A7)} - ${ytAudioQueue[0].title} - ${ytAudioQueue[0].duration.minutes()}:${ytAudioQueue[0].duration.seconds() < 10 ? "0" + ytAudioQueue[0].duration.seconds() : ytAudioQueue[0].duration.seconds()}\nQueue -\n` : '\u1F3A7 - Nothing is playing\nQueue -\n'
+  if (ytAudioQueue.length === 1) queue += "No Music Queued"
   for(let i = 1; i < ytAudioQueue.length; i++) {
     let song = ytAudioQueue[i]
     queue += `${i}) ${song.title} - ${song.duration.minutes()}:${song.duration.seconds() < 10 ? "0" + song.duration.seconds() : song.duration.seconds()}\n`
@@ -287,7 +287,7 @@ function YoutubeSearch(searchKeywords, message) {
                       v.duration = duration;
                       QueueYtAudioStream(v);
                     } else {
-                      console.error(`Video ${i.id.videoId} is longer than 5 mins`);
+                      console.error(`Video ${i.id.videoId} is longer than 5 mins or not long enough`);
                     }
                   }
                 })
@@ -307,7 +307,8 @@ function YoutubeSearch(searchKeywords, message) {
 function QueueYtAudioStream(video) {
   let v = {
     url: `https://www.youtube.com/watch?v=${video.id.videoId}`,
-    title: video.snippet.title
+    title: video.snippet.title,
+    duration: video.duration
   }
 
   ytAudioQueue.push(v);
