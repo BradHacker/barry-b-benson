@@ -12,7 +12,7 @@ let non_christian_words = [];
 let voiceChannel = null;
 let ytAudioQueue = [];
 let playing = false;
-const dispatcher;
+let dispatcher;
 
 client.on('ready', () => {
   console.log('Beam me up Scotty!');
