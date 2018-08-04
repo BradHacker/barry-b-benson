@@ -223,15 +223,12 @@ function JoinChannel(channel, message) {
     console.log('DISCONNECTED FROM VOICE')
     voiceChannel.leave();
   }
-
-  message.reply("Attempting to join channel: " + channel.trim());
-
   voiceChannel = GetChannelByName(channel.trim());
-
   if(voiceChannel) {
     console.log('Joining voice channel')
     return voiceChannel.join().then(connection => {
       message.channel.send("Connected to voice channel: " + channel.trim())
+      if(!playing && ytAudioQueue.length > 0) PlayStream(ytAudioQueue[0]);
     }).catch(err => {
       console.error(err)
     });;
@@ -255,7 +252,7 @@ function ResetMusicQueue() {
 }
 
 function ListQueue() {
-  let queue = playing ? `:headphones: - ${ytAudioQueue[0].title} - ${ytAudioQueue[0].duration.minutes()}:${ytAudioQueue[0].duration.seconds() < 10 ? "0" + ytAudioQueue[0].duration.seconds() : ytAudioQueue[0].duration.seconds()}\nQueue -\n` : '\u1F3A7 - Nothing is playing\nQueue -\n'
+  let queue = playing ? `:headphones: - ${ytAudioQueue[0].title} - ${ytAudioQueue[0].duration.minutes()}:${ytAudioQueue[0].duration.seconds() < 10 ? "0" + ytAudioQueue[0].duration.seconds() : ytAudioQueue[0].duration.seconds()}\nQueue -\n` : ':headphones: - Nothing is playing\nQueue -\n'
   if (ytAudioQueue.length <= 1) queue += "No Music Queued"
   for(let i = 1; i < ytAudioQueue.length; i++) {
     let song = ytAudioQueue[i]
@@ -384,12 +381,9 @@ function PlayStream(video) {
     if(aChannel) console.log("Found announcement channel: " + aChannel.name);
     playing = true;
     if(aChannel) {
-      aChannel.send('Now Playing: ' + video.title).then(() => {
-        console.log("Sent message to announcements")
-      }).catch(() => {
-        console.error("Couldn't send announcement")
-      })
-      console.log("Streaming audio from " + video.url);
+      if(client.voiceConnections.array().length > 0) {
+        aChannel.send('Now Playing: ' + video.title)
+        console.log("Streaming audio from " + video.url);
         const stream = ytdl(video.url, {filter: 'audioonly'});
         dispatcher = client.voiceConnections.first().playStream(stream, streamOptions);
         dispatcher.on('end', () => {
@@ -402,6 +396,9 @@ function PlayStream(video) {
           }
           //ListQueue();
         })
+      } else {
+        aChannel.send('Please COnnect me to a voice channel so I can play my queued music.')
+      }
     } else {
       console.error("Couldn't connect to announcement channel")
       let channel = client.channels.find(val => val.name.toLowerCase() === "general")
