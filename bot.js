@@ -15,7 +15,7 @@ let playing = false;
 let dispatcher;
 let announcementChannel = config.announcementChannel;
 let tempQueue = [];
-let queueing = false;
+let songStartedAt = null;
 
 client.on('ready', () => {
   console.log('Beam me up Scotty!');
@@ -255,11 +255,13 @@ function ResetMusicQueue() {
 }
 
 function ListQueue() {
-  let queue = playing ? `:headphones: - ${ytAudioQueue[0].title} - ${ytAudioQueue[0].duration.minutes()}:${ytAudioQueue[0].duration.seconds() < 10 ? "0" + ytAudioQueue[0].duration.seconds() : ytAudioQueue[0].duration.seconds()}\nQueue -\n` : ':headphones: - Nothing is playing\nQueue -\n'
+  let queue = playing ? `:headphones: - ${ytAudioQueue[0].title} | Started At: ${moment(songStartedAt).format('hh:mm')}\nQueue -\n` : ':headphones: - Nothing is playing\nQueue -\n'
   if (ytAudioQueue.length <= 1) queue += "No Music Queued"
+  let totalDuration = moment.duration(0);
   for(let i = 1; i < ytAudioQueue.length; i++) {
     let song = ytAudioQueue[i]
-    queue += `${i}) ${song.title} - ${song.duration.minutes()}:${song.duration.seconds() < 10 ? "0" + song.duration.seconds() : song.duration.seconds()}\n`
+    totalDuration.add(song.duration)
+    queue += `${i}) ${song.title} | Will Start At: ${moment(songStartedAt).add(totalDuration)}\n`
   }
   let channel = client.channels.find(val => val.name === config.announcementChannel)
   if(channel) channel.send(queue)
@@ -384,8 +386,9 @@ function PlayStream(video) {
     if(aChannel) console.log("Found announcement channel: " + aChannel.name);
     if(aChannel) {
       if(client.voiceConnections.array().length > 0) {
+        songStartedAt = new Date();
         playing = true;
-        aChannel.send('Now Playing: ' + video.title)
+        aChannel.send(':headphones: Now Playing: ' + video.title)
         console.log("Streaming audio from " + video.url);
         const stream = ytdl(video.url, {filter: 'audioonly'});
         dispatcher = client.voiceConnections.first().playStream(stream, streamOptions);
@@ -400,7 +403,7 @@ function PlayStream(video) {
           //ListQueue();
         })
       } else {
-        aChannel.send('Please COnnect me to a voice channel so I can play my queued music.')
+        aChannel.send('Please Connect me to a voice channel so I can play my queued music.')
       }
     } else {
       console.error("Couldn't connect to announcement channel")
