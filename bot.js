@@ -14,6 +14,8 @@ let ytAudioQueue = [];
 let playing = false;
 let dispatcher;
 let announcementChannel = config.announcementChannel;
+let tempQueue = [];
+let queueing = false;
 
 client.on('ready', () => {
   console.log('Beam me up Scotty!');
@@ -239,6 +241,11 @@ function JoinChannel(channel, message) {
   }
 }
 
+function PlayCommand(searchTerm, message) {
+  message.channel.send("Searching Youtube for audio...");
+  YoutubeSearch(searchTerm, message);
+}
+
 function ResetMusicQueue() {
   if(playing) {
     ytAudioQueue.splice(1, ytAudioQueue.length - 1)
@@ -295,13 +302,9 @@ function GetChannelByName(name) {
   return channel;
 }
 
-function PlayCommand(searchTerm, message) {
-  message.channel.send("Searching Youtube for audio...");
-  YoutubeSearch(searchTerm, message);
-}
-
-function YoutubeSearch(searchKeywords, message) {
-  let snippetUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&q=${escape(searchKeywords)}&key=${process.env.API_KEY}`;
+function YoutubeSearch(searchKeywords, message, pageToken) {
+  let snippetUrl = pageToken ? `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&q=${escape(searchKeywords)}&key=${process.env.API_KEY}&pageToken=${pageToken}` :
+  `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&q=${escape(searchKeywords)}&key=${process.env.API_KEY}`;
 
   request(snippetUrl, (error, response) => {
       if (!error && response.statusCode == 200) {
@@ -310,22 +313,38 @@ function YoutubeSearch(searchKeywords, message) {
               message.channel.send("Your search gave 0 results");
               return videoId;
           }
+          let reqsSent = 0;
+          let reqsRecieved = 0;
           for (var item of body.items) {
               if (item.id.kind === 'youtube#video') {
                 let i = item;
                 let detailsUrl = `https://www.googleapis.com/youtube/v3/videos?id=${i.id.videoId}&part=contentDetails&key=${process.env.API_KEY}`;
+                reqsSent++;
                 request(detailsUrl, (error, response) => {
+                  reqsRecieved++;
                   //console.log(response)
                   if(!error && response.statusCode == 200) {
                     let duration = moment.duration(response.body.items[0].contentDetails.duration);
                     console.log(`Duration: ${duration.minutes()}:${duration.seconds() < 10 ? "0" + duration.seconds() : duration.seconds()} id: ${i.id.videoId}`)
-                    if (duration.minutes() <= config.maxVideoTime && duration.minutes() > 0) {
+                    if (duration.minutes() <= config.maxVideoTime && duration.minutes() > 0 && i.snippet.liveBroadcastContent !== "live") {
                       console.log("Queued: " + i.id.videoId);
-                      let v = i
-                      v.duration = duration;
-                      QueueYtAudioStream(v);
+                      let v = {
+                        url: `https://www.youtube.com/watch?v=${i.id.videoId}`,
+                        title: i.snippet.title,
+                        duration: duration
+                      }
+                      if(tempQueue.length <= 5) {
+                        tempQueue.push(v);
+                      }
+                      if(reqsRecieved === reqsSent) {
+                        if(tempQueue.length <= 5) {
+                          YoutubeSearch(searchKeywords, message, body.nextPageToken);
+                        } else {
+                          QueueYtAudioStream();
+                        }
+                      }
                     } else {
-                      console.error(`Video ${i.id.videoId} is longer than ${config.maxVideoTime} mins or not long enough`);
+                      console.error(`Video ${i.id.videoId} is longer than ${config.maxVideoTime} mins or not long enough or live video`);
                     }
                   }
                 })
@@ -342,17 +361,12 @@ function YoutubeSearch(searchKeywords, message) {
 }
 
 /// Queues result of Youtube search into stream
-function QueueYtAudioStream(video) {
-  let v = {
-    url: `https://www.youtube.com/watch?v=${video.id.videoId}`,
-    title: video.snippet.title,
-    duration: video.duration
-  }
-
-  ytAudioQueue.push(v);
+function QueueYtAudioStream() {
+  ytAudioQueue.concat(tempQueue);
   if(!playing) {
     PlayStream(ytAudioQueue[0]);
   }
+  tempQueue = [];
 }
 
 function PlayStream(video) {
