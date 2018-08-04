@@ -248,7 +248,7 @@ function ResetMusicQueue() {
 }
 
 function ListQueue() {
-  let queue = playing ? `${fixedFromCharCode(0x1F3A7)} - ${ytAudioQueue[0].title} - ${ytAudioQueue[0].duration.minutes()}:${ytAudioQueue[0].duration.seconds() < 10 ? "0" + ytAudioQueue[0].duration.seconds() : ytAudioQueue[0].duration.seconds()}\nQueue -\n` : '\u1F3A7 - Nothing is playing\nQueue -\n'
+  let queue = playing ? `:headphones: - ${ytAudioQueue[0].title} - ${ytAudioQueue[0].duration.minutes()}:${ytAudioQueue[0].duration.seconds() < 10 ? "0" + ytAudioQueue[0].duration.seconds() : ytAudioQueue[0].duration.seconds()}\nQueue -\n` : '\u1F3A7 - Nothing is playing\nQueue -\n'
   if (ytAudioQueue.length === 1) queue += "No Music Queued"
   for(let i = 1; i < ytAudioQueue.length; i++) {
     let song = ytAudioQueue[i]
@@ -264,14 +264,14 @@ function SkipSong() {
 
 function SetAnnouncementChannel(channel, message) {
   config.announcementChannel = channel;
-  fs.writeFile('./config.json', "" + JSON.stringify(config), () => {
+  fs.writeFileSync('./config.json', "" + JSON.stringify(config), () => {
     message.channel.send("Announcement channel set to " + config.announcementChannel);
   })
 }
 
 function SetMaxVideoTime(length, message) {
-  config.maxVideoTime = length;
-  fs.writeFile('./config.json', "" + JSON.stringify(config), () => {
+  config.maxVideoTime = parseInt(length);
+  fs.writeFileSync('./config.json', "" + JSON.stringify(config), () => {
     message.channel.send("Max Video Length set to " + config.length + " mins");
   })
 }
@@ -325,7 +325,7 @@ function YoutubeSearch(searchKeywords, message) {
                       v.duration = duration;
                       QueueYtAudioStream(v);
                     } else {
-                      console.error(`Video ${i.id.videoId} is longer than 5 mins or not long enough`);
+                      console.error(`Video ${i.id.videoId} is longer than ${config.maxVideoTime} mins or not long enough`);
                     }
                   }
                 })
@@ -382,20 +382,20 @@ function PlayStream(video) {
         })
     } else {
       console.error("Couldn't connect to announcement channel")
-      let channel = client.channels.find(val => val.name.toLower() === "general")
+      let channel = client.channels.find(val => val.name.toLowerCase() === "general")
       if(channel) {
-        channel.send("Please create a text channel called: `bman-announcements`")
+        channel.send("Please create an announcement channel and set it")
       }
     }
   }
 }
 
-function fixedFromCharCode(codePt) {
-  if (codePt > 0xFFFF) {
-      codePt -= 0x10000;
-      return String.fromCharCode(0xD800 + (codePt >> 10), 0xDC00 + (codePt & 0x3FF));
-  }
-  else {
-      return String.fromCharCode(codePt);
-  }
-}
+// function fixedFromCharCode(codePt) {
+//   if (codePt > 0xFFFF) {
+//       codePt -= 0x10000;
+//       return String.fromCharCode(0xD800 + (codePt >> 10), 0xDC00 + (codePt & 0x3FF));
+//   }
+//   else {
+//       return String.fromCharCode(codePt);
+//   }
+// }
