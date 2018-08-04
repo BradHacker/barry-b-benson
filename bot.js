@@ -256,7 +256,7 @@ function ResetMusicQueue() {
 
 function ListQueue() {
   let queue = playing ? `:headphones: - ${ytAudioQueue[0].title} - ${ytAudioQueue[0].duration.minutes()}:${ytAudioQueue[0].duration.seconds() < 10 ? "0" + ytAudioQueue[0].duration.seconds() : ytAudioQueue[0].duration.seconds()}\nQueue -\n` : '\u1F3A7 - Nothing is playing\nQueue -\n'
-  if (ytAudioQueue.length === 1) queue += "No Music Queued"
+  if (ytAudioQueue.length <= 1) queue += "No Music Queued"
   for(let i = 1; i < ytAudioQueue.length; i++) {
     let song = ytAudioQueue[i]
     queue += `${i}) ${song.title} - ${song.duration.minutes()}:${song.duration.seconds() < 10 ? "0" + song.duration.seconds() : song.duration.seconds()}\n`
@@ -333,18 +333,21 @@ function YoutubeSearch(searchKeywords, message, pageToken) {
                         title: i.snippet.title,
                         duration: duration
                       }
-                      if(tempQueue.length <= 5) {
+                      if(tempQueue.length < 5) {
                         tempQueue.push(v);
-                      }
-                      if(reqsRecieved === reqsSent) {
-                        if(tempQueue.length <= 5) {
-                          YoutubeSearch(searchKeywords, message, body.nextPageToken);
-                        } else {
-                          QueueYtAudioStream();
-                        }
+                        console.log("Temp Queue: " + tempQueue.toString())
                       }
                     } else {
                       console.error(`Video ${i.id.videoId} is longer than ${config.maxVideoTime} mins or not long enough or live video`);
+                    }
+                    if(reqsRecieved === reqsSent) {
+                      if(tempQueue.length < 5) {
+                        console.log("Next Page")
+                        YoutubeSearch(searchKeywords, message, body.nextPageToken);
+                      } else {
+                        console.log("Start Queueing")
+                        QueueYtAudioStream();
+                      }
                     }
                   }
                 })
