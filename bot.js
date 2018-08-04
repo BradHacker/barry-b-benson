@@ -347,9 +347,17 @@ function YoutubeSearch(searchKeywords, message, pageToken) {
                         title: i.snippet.title,
                         duration: duration
                       }
-                      if(tempQueue.length < config.videosAtATime) {
-                        tempQueue.push(v);
-                        console.log("Temp Queue: " + tempQueue.toString())
+                      if(config.videosAtATime) {
+                        console.log("Videos At A Time: " + config.videosAtATime);
+                        if(tempQueue.length < config.videosAtATime) {
+                          tempQueue.push(v);
+                          console.log("Temp Queue: " + tempQueue.toString())
+                        }
+                      } else {
+                        if(tempQueue.length < 1) {
+                          tempQueue.push(v);
+                          console.log("Temp Queue: " + tempQueue.toString())
+                        }
                       }
                     } else {
                       console.error(`Video ${i.id.videoId} is longer than ${config.maxVideoTime} mins or not long enough or live video`);
