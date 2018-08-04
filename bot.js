@@ -13,12 +13,13 @@ let voiceChannel = null;
 let ytAudioQueue = [];
 let playing = false;
 let dispatcher;
+let announcementChannel = config.announcementChannel;
 
 client.on('ready', () => {
   console.log('Beam me up Scotty!');
-  let announcementChannel = client.channels.find(val => val.name === "bman-announcements")
-  if(announcementChannel) announcementChannel.send("I'm back up from my nap!")
-  else client.channels.find(val => val.name === "general").send("Please create a text channel called: `bman-announcements`")
+  let aChannel = client.channels.find(val => val.name === announcementChannel)
+  if(aChannel) aChannel.send("I'm back up from my nap!")
+  else client.channels.find(val => val.name.toLowerCase() === "general").send("Please create a text channel for announcements and/or set it using `setAnnouncementChannel`")
 });
 
 client.on('message', message => {
@@ -39,45 +40,56 @@ client.on('message', message => {
       //console.log("Member is owner: " + (message.member === message.guild.owner))
       if(command === "bee_movie_script" && message.member === message.guild.owner){
         beeMovieScript(message)
+        return;
       }
-      if(command === "unban") {
-        unbanWords(message, args, guildID)
-      }
-      if(command === "ban") {
-        banWords(message, args, guildID)
-      }
-      if(command === "list all") {
-        if(non_christian_words.length > 0) {
-          message.channel.send('Okay the following word(s) are currently banned: **' + non_christian_words.join(', ') + '**')
-        } else {
-          message.channel.send("There currently aren't any banned words.")
-        }
-      }
-      if(command === "set timeout") {
-        config.deleteTimeout = parseInt(args[0])
-        console.log(JSON.stringify(config))
-        fs.writeFile('./config.json', "" + JSON.stringify(config), () => {
-          message.channel.send("Deletion timeout set to " + config.deleteTimeout + ' secs')
-        })
-      }
-      if(command === "help") {
-        message.channel.send(config.helpText.join('\n'))
-      }
-      if(command === "join") {
-        message.reply("Attempting to join channel: " + args[0]);
-        JoinChannel(args[0], message);
-      }
-      if(command === "play") {
-        PlayCommand(args.join(" "), message);
-      }
-      if(command === "resetQueue") {
-        ResetMusicQueue();
-      }
-      if(command === "listQueue") {
-        ListQueue();
-      }
-      if(command === "skip") {
-        SkipSong();
+      switch(command) {
+        case ("unban"):
+          unbanWords(message, args, guildID)
+          break;
+        case ("ban"):
+          banWords(message, args, guildID)
+          break;
+        case ("listAll"):
+          if(non_christian_words.length > 0) {
+            message.channel.send('Okay the following word(s) are currently banned: **' + non_christian_words.join(', ') + '**')
+          } else {
+            message.channel.send("There currently aren't any banned words.")
+          }
+          break;
+        case ("setTimeout"):
+          config.deleteTimeout = parseInt(args[0])
+          console.log(JSON.stringify(config))
+          fs.writeFile('./config.json', "" + JSON.stringify(config), () => {
+            message.channel.send("Deletion timeout set to " + config.deleteTimeout + ' secs')
+          })
+          break;
+        case ("help"):
+          message.channel.send(config.helpText.join('\n'))
+          break;
+        case ("join"):
+          JoinChannel(args[0], message);
+          break;
+        case ("play"):
+          PlayCommand(args.join(" "), message);
+          break;
+        case ("resetQueue"):
+          ResetMusicQueue();
+          break;
+        case ("listQueue"):
+          ListQueue();
+          break;
+        case ("skip"):
+          SkipSong();
+          break;
+        case ("setAnnouncementChannel"):
+          SetAnnouncementChannel(args[0], message);
+          break;
+        case ("setMaxVideoTime"):
+          SetMaxVideoTime(args[0], message);
+          break;
+        default:
+          message.reply("It seems you have used a command that hasn't been created yet.")
+          break;
       }
     }
   }
@@ -210,6 +222,8 @@ function JoinChannel(channel, message) {
     voiceChannel.leave();
   }
 
+  message.reply("Attempting to join channel: " + channel.trim());
+
   voiceChannel = GetChannelByName(channel.trim());
 
   if(voiceChannel) {
@@ -240,12 +254,26 @@ function ListQueue() {
     let song = ytAudioQueue[i]
     queue += `${i}) ${song.title} - ${song.duration.minutes()}:${song.duration.seconds() < 10 ? "0" + song.duration.seconds() : song.duration.seconds()}\n`
   }
-  let channel = client.channels.find(val => val.name === "bman-announcements")
+  let channel = client.channels.find(val => val.name === config.announcementChannel)
   if(channel) channel.send(queue)
 }
 
 function SkipSong() {
   dispatcher.end();
+}
+
+function SetAnnouncementChannel(channel, message) {
+  config.announcementChannel = channel;
+  fs.writeFile('./config.json', "" + JSON.stringify(config), () => {
+    message.channel.send("Announcement channel set to " + config.announcementChannel);
+  })
+}
+
+function SetMaxVideoTime(length, message) {
+  config.maxVideoTime = length;
+  fs.writeFile('./config.json', "" + JSON.stringify(config), () => {
+    message.channel.send("Max Video Length set to " + config.length + " mins");
+  })
 }
 
 // Helper functions
@@ -291,7 +319,7 @@ function YoutubeSearch(searchKeywords, message) {
                   if(!error && response.statusCode == 200) {
                     let duration = moment.duration(response.body.items[0].contentDetails.duration);
                     console.log(`Duration: ${duration.minutes()}:${duration.seconds() < 10 ? "0" + duration.seconds() : duration.seconds()} id: ${i.id.videoId}`)
-                    if (duration.minutes() < 5 && duration.minutes() > 0) {
+                    if (duration.minutes() <= config.maxVideoTime && duration.minutes() > 0) {
                       console.log("Queued: " + i.id.videoId);
                       let v = i
                       v.duration = duration;
@@ -330,11 +358,11 @@ function QueueYtAudioStream(video) {
 function PlayStream(video) {
   const streamOptions = {seek: 0, volume: 1, passes: 2, bitrate: 'auto'};
   if (video && !playing) {
-    let announcementChannel = client.channels.find(val => val.name === "bman-announcements")
-    if(announcementChannel) console.log("Found announcement channel: " + announcementChannel.name);
+    let aChannel = client.channels.find(val => val.name === config.announcementChannel)
+    if(aChannel) console.log("Found announcement channel: " + aChannel.name);
     playing = true;
-    if(announcementChannel) {
-      announcementChannel.send('Now Playing: ' + video.title).then(() => {
+    if(aChannel) {
+      aChannel.send('Now Playing: ' + video.title).then(() => {
         console.log("Sent message to announcements")
       }).catch(() => {
         console.error("Couldn't send announcement")
@@ -348,7 +376,7 @@ function PlayStream(video) {
           if(ytAudioQueue.length > 0) {
             PlayStream(ytAudioQueue[0]);
           } else {
-            announcementChannel.send("Finished Music Queue")
+            aChannel.send("Finished Music Queue")
           }
           //ListQueue();
         })
