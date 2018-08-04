@@ -13,8 +13,10 @@
     "`resetQueue:` - resets the music queue",
     "`skip:` - skips the current song",
     "`setAnnouncementChannel: channel` - sets the announcement channel",
-    "`setMaxVideoTime: mins` - sets the max video length in mins"
+    "`setMaxVideoTime: mins` - sets the max video length in mins",
+    "`setVideosAtATime: num` - sets number of videos to add to the queue from a search"
   ],
   "announcementChannel": "bot-commands",
-  "maxVideoTime": 10
+  "maxVideoTime": 10,
+  "videosAtATime": 1
 }

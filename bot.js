@@ -89,6 +89,9 @@ client.on('message', message => {
         case ("setMaxVideoTime"):
           SetMaxVideoTime(args[0], message);
           break;
+        case ("setVideosAtATime"):
+          SetVideosAtATime(args[0], message)
+          break;
         default:
           message.reply("It seems you have used a command that hasn't been created yet.")
           break;
@@ -256,13 +259,14 @@ function ResetMusicQueue() {
 
 function ListQueue() {
   let timezone = new Date();
-  let queue = playing ? `:headphones: - ${ytAudioQueue[0].title} | Started At: ${moment(songStartedAt).add(timezone.getTimezoneOffset()).format('hh:mm')}\nQueue -\n` : ':headphones: - Nothing is playing\nQueue -\n'
+  console.log("Timezone Offset: " + timezone.getTimezoneOffset())
+  let queue = playing ? `:headphones: - ${ytAudioQueue[0].title} | Started At: ${moment(songStartedAt).add(timezone.getTimezoneOffset(), 'hours').format('hh:mm')}\nQueue -\n` : ':headphones: - Nothing is playing\nQueue -\n'
   if (ytAudioQueue.length <= 1) queue += "No Music Queued"
   let totalDuration = moment.duration(0);
   for(let i = 1; i < ytAudioQueue.length; i++) {
     let song = ytAudioQueue[i]
     totalDuration.add(song.duration)
-    queue += `${i}) ${song.title} | Will Start At: ${moment(songStartedAt).add(totalDuration).add(timezone.getTimezoneOffset()).format('hh:mm')}\n`
+    queue += `${i}) ${song.title} | Will Start At: ${moment(songStartedAt).add(totalDuration).add(timezone.getTimezoneOffset(), 'hours').format('hh:mm')}\n`
   }
   let channel = client.channels.find(val => val.name === config.announcementChannel)
   if(channel) channel.send(queue)
@@ -283,6 +287,13 @@ function SetMaxVideoTime(length, message) {
   config.maxVideoTime = parseInt(length);
   fs.writeFileSync('./config.json', "" + JSON.stringify(config), () => {
     message.channel.send("Max Video Length set to " + config.length + " mins");
+  })
+}
+
+function SetVideosAtATime(num, message) {
+  config.videosAtATime = parseInt(num);
+  fs.writeFileSync('./config.json', "" + JSON.stringify(config), () => {
+    message.channel.send("Max Video Length set to " + config.videosAtATime + " mins");
   })
 }
 
@@ -336,7 +347,7 @@ function YoutubeSearch(searchKeywords, message, pageToken) {
                         title: i.snippet.title,
                         duration: duration
                       }
-                      if(tempQueue.length < 5) {
+                      if(tempQueue.length < config.videosAtATime) {
                         tempQueue.push(v);
                         console.log("Temp Queue: " + tempQueue.toString())
                       }
