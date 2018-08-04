@@ -365,8 +365,13 @@ function YoutubeSearch(searchKeywords, message, pageToken) {
 
 /// Queues result of Youtube search into stream
 function QueueYtAudioStream() {
-  ytAudioQueue.concat(tempQueue);
+  console.log(ytAudioQueue.toString())
+  for(let item of tempQueue) {
+    ytAudioQueue.push(item);
+  }
+  console.log(ytAudioQueue.toString())
   if(!playing) {
+    console.log("Start playing from QueueYtAudioStream")
     PlayStream(ytAudioQueue[0]);
   }
   tempQueue = [];
