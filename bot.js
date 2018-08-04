@@ -18,7 +18,7 @@ client.on('ready', () => {
   console.log('Beam me up Scotty!');
   let announcementChannel = client.channels.find(val => val.name === "bman-announcements")
   if(announcementChannel) announcementChannel.send("I'm back up from my nap!")
-  else client.channels.find(val => val.name.toLower() === "general").send("Please create a text channel called: `bman-announcements`")
+  else client.channels.find(val => val.name === "general").send("Please create a text channel called: `bman-announcements`")
 });
 
 client.on('message', message => {

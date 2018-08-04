@@ -7,7 +7,7 @@
     "`list all:` - lists all currently banned words",
     "`set timeout: number` - sets bot message tiemout in seconds",
     "`help:` - displays this help screen",
-    "`join:` - joins a voice channel",
+    "`join: channel` - joins a voice channel",
     "`play: kewords` - plays music from youtube related to keywords after the :, limited to 5 min videos for server load reasons",
     "`listQueue:` - lists the current music queue",
     "`resetQueue:` - resets the music queue",
