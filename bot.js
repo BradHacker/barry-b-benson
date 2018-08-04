@@ -105,7 +105,7 @@ client.login(process.env.TOKEN);
 function checkForBannedWords(message) {
   let banned_words_used = [];
   for(let word of non_christian_words) {
-    if(message.content.toLowerCase().includes(word)) {
+    if(message.content.toLowerCase().includes(` ${word} `) || message.content.toLowerCase().includes(` ${word}`) || message.content.toLowerCase().includes(`${word} `)) {
       banned_words_used.push(word);
     }
   }
@@ -255,13 +255,14 @@ function ResetMusicQueue() {
 }
 
 function ListQueue() {
-  let queue = playing ? `:headphones: - ${ytAudioQueue[0].title} | Started At: ${moment(songStartedAt).format('hh:mm')}\nQueue -\n` : ':headphones: - Nothing is playing\nQueue -\n'
+  let timezone = new Date();
+  let queue = playing ? `:headphones: - ${ytAudioQueue[0].title} | Started At: ${moment(songStartedAt).add(timezone.getTimezoneOffset()).format('hh:mm')}\nQueue -\n` : ':headphones: - Nothing is playing\nQueue -\n'
   if (ytAudioQueue.length <= 1) queue += "No Music Queued"
   let totalDuration = moment.duration(0);
   for(let i = 1; i < ytAudioQueue.length; i++) {
     let song = ytAudioQueue[i]
     totalDuration.add(song.duration)
-    queue += `${i}) ${song.title} | Will Start At: ${moment(songStartedAt).add(totalDuration)}\n`
+    queue += `${i}) ${song.title} | Will Start At: ${moment(songStartedAt).add(totalDuration).add(timezone.getTimezoneOffset()).format('hh:mm')}\n`
   }
   let channel = client.channels.find(val => val.name === config.announcementChannel)
   if(channel) channel.send(queue)
@@ -328,7 +329,7 @@ function YoutubeSearch(searchKeywords, message, pageToken) {
                   if(!error && response.statusCode == 200) {
                     let duration = moment.duration(response.body.items[0].contentDetails.duration);
                     console.log(`Duration: ${duration.minutes()}:${duration.seconds() < 10 ? "0" + duration.seconds() : duration.seconds()} id: ${i.id.videoId}`)
-                    if (duration.minutes() <= config.maxVideoTime && duration.minutes() > 0 && i.snippet.liveBroadcastContent !== "live") {
+                    if (duration.hours() === 0 && duration.minutes() <= config.maxVideoTime && duration.minutes() > 0 && i.snippet.liveBroadcastContent !== "live") {
                       console.log("Queued: " + i.id.videoId);
                       let v = {
                         url: `https://www.youtube.com/watch?v=${i.id.videoId}`,
@@ -377,6 +378,7 @@ function QueueYtAudioStream() {
     PlayStream(ytAudioQueue[0]);
   }
   tempQueue = [];
+  ListQueue();
 }
 
 function PlayStream(video) {
