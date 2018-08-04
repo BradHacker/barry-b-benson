@@ -225,13 +225,16 @@ function JoinChannel(channel, message) {
   }
   voiceChannel = GetChannelByName(channel.trim());
   if(voiceChannel) {
-    console.log('Joining voice channel')
     return voiceChannel.join().then(connection => {
       message.channel.send("Connected to voice channel: " + channel.trim())
-      if(!playing && ytAudioQueue.length > 0) PlayStream(ytAudioQueue[0]);
+      console.log('Joined voice channel')
+      if(!playing && ytAudioQueue.length > 0) {
+        console.log('Starting Queued Music')
+        PlayStream(ytAudioQueue[0]);
+      }
     }).catch(err => {
       console.error(err)
-    });;
+    });
   } else {
     message.reply("Couldn't find channel: " + channel.trim());
     return;
@@ -379,9 +382,9 @@ function PlayStream(video) {
   if (video && !playing) {
     let aChannel = client.channels.find(val => val.name === config.announcementChannel)
     if(aChannel) console.log("Found announcement channel: " + aChannel.name);
-    playing = true;
     if(aChannel) {
       if(client.voiceConnections.array().length > 0) {
+        playing = true;
         aChannel.send('Now Playing: ' + video.title)
         console.log("Streaming audio from " + video.url);
         const stream = ytdl(video.url, {filter: 'audioonly'});
