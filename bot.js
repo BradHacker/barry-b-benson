@@ -314,8 +314,10 @@ function SetVideosAtATime(num, message) {
 
 function SetTimezone(abbr, message) {
   if(abbr) {
+    console.log(abbr)
     let possibleZones = []
     timezones.map(zone => {
+      console.log(zone.abbr)
       if(zone.abbr.includes(abbr)) {
         possibleZones.push(zone)
       }
@@ -325,12 +327,14 @@ function SetTimezone(abbr, message) {
         config.timezone = possibleZones[0].abbr
         config.timezoneOffset = possibleZones[0].offset
         fs.writeFile('./config.json', "" + JSON.stringify(config), () => {
-          message.channel.send("Videos added to queue at a time set to " + config.videosAtATime + " videos");
+          message.channel.send("Timezone set to: " + config.timezone);
         })
       } else {
         let abbrs = possibleZones.map(zone => zone.abbr)
         message.reply(`Did you mean one of these: ${abbrs.join(',')}?`)
       }
+    } else {
+      message.reply("No timezones found.")
     }
   } else {
     message.reply("Please provide a time zone abbreviation")
@@ -483,13 +487,3 @@ process.on('SIGTERM', () => {
     channel.send("Going to take a nap real quick")
   }
 });
-
-// function fixedFromCharCode(codePt) {
-//   if (codePt > 0xFFFF) {
-//       codePt -= 0x10000;
-//       return String.fromCharCode(0xD800 + (codePt >> 10), 0xDC00 + (codePt & 0x3FF));
-//   }
-//   else {
-//       return String.fromCharCode(codePt);
-//   }
-// }
