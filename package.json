@@ -1,7 +1,7 @@
 {
   "name": "barry-b-benson",
   "version": "1.0.0",
-  "description": "A discord bot for banning words and pasting the entire bee movie script",
+  "description": "A discord bot for banning words and pasting the entire bee movie script, also now for streaming music",
   "main": "bot.js",
   "engines": {
     "node": "9.11.1",

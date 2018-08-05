@@ -13,10 +13,13 @@
     "`resetQueue:` - resets the music queue",
     "`skip:` - skips the current song",
     "`setAnnouncementChannel: channel` - sets the announcement channel",
-    "`setMaxVideoTime: mins` - sets the max video length in mins",
-    "`setVideosAtATime: num` - sets number of videos to add to the queue from a search"
+    "`setMaxVideoTime: mins` - sets the max video length in mins (mins > 5)",
+    "`setVideosAtATime: num` - sets number of videos to add to the queue from a search (num > 1)",
+    "`setTimezone: abbr` - sets the server timezone, uses standard UTC abbreviations"
   ],
   "announcementChannel": "bot-commands",
   "maxVideoTime": 10,
-  "videosAtATime": 5
+  "videosAtATime": 5,
+  "timezoneOffset": -4,
+  "timezone": "EDT"
 }
