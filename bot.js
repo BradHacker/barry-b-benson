@@ -2,7 +2,6 @@ const Discord = require('discord.js');
 const ytdl = require('ytdl-core')
 const request = require('superagent')
 const client = new Discord.Client();
-const config = require('./config.json')
 const beeMovie = require('./beeMovieScript.json')
 const timezones = require('./timezones.json')
 const fs = require('fs');
@@ -17,6 +16,7 @@ let dispatcher;
 let announcementChannel = config.announcementChannel;
 let tempQueue = [];
 let songStartedAt = null;
+let config = require('./config.json');
 
 client.on('ready', () => {
   console.log('Beam me up Scotty!');
@@ -33,6 +33,15 @@ client.on('message', message => {
   if(m.indexOf(':') !== -1) {
     let guildID = message.guild.id;
     retrieveNonChristianWords(guildID)
+
+    if (!fs.existsSync(`./${guildID}-config.json`)) {
+      fs.writeFile(`./${guildID}-config.json`, "" + JSON.stringify(config), () => {
+        message.channel.send('Created and loaded configuration file.')
+        config = require(`./${guildID}-config.json`);
+      });
+    } else {
+      config = require(`./${guildID}-config.json`);
+    }
 
     const args = m.slice(m.indexOf(':')+1, m.length).split(',');
     const command = m.slice(0, m.indexOf(':'));
@@ -316,12 +325,12 @@ function SetTimezone(abbr, message) {
   if(abbr) {
     console.log(abbr)
     let possibleZones = []
-    timezones.map(zone => {
+    for(let zone of timezones) {
       console.log(zone.abbr)
-      if(zone.abbr.includes(abbr)) {
+      if(zone.abbr.toLowerCase().includes(abbr.toLowerCase())) {
         possibleZones.push(zone)
       }
-    });
+    }
     if(possibleZones.length > 0) {
       if(possibleZones.length === 1) {
         config.timezone = possibleZones[0].abbr
