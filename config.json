@@ -18,5 +18,5 @@
   ],
   "announcementChannel": "bot-commands",
   "maxVideoTime": 10,
-  "videosAtATime": 1
+  "videosAtATime": 5
 }

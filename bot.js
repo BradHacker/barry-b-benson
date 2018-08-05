@@ -108,7 +108,7 @@ client.login(process.env.TOKEN);
 function checkForBannedWords(message) {
   let banned_words_used = [];
   for(let word of non_christian_words) {
-    if(message.content.toLowerCase().includes(` ${word} `) || message.content.toLowerCase().includes(` ${word}`) || message.content.toLowerCase().includes(`${word} `)) {
+    if(message.content.toLowerCase().includes(word)) {
       banned_words_used.push(word);
     }
   }
@@ -278,21 +278,21 @@ function SkipSong() {
 
 function SetAnnouncementChannel(channel, message) {
   config.announcementChannel = channel;
-  fs.writeFileSync('./config.json', "" + JSON.stringify(config), () => {
+  fs.writeFile('./config.json', "" + JSON.stringify(config), () => {
     message.channel.send("Announcement channel set to " + config.announcementChannel);
   })
 }
 
 function SetMaxVideoTime(length, message) {
   config.maxVideoTime = parseInt(length);
-  fs.writeFileSync('./config.json', "" + JSON.stringify(config), () => {
+  fs.writeFile('./config.json', "" + JSON.stringify(config), () => {
     message.channel.send("Max Video Length set to " + config.length + " mins");
   })
 }
 
 function SetVideosAtATime(num, message) {
   config.videosAtATime = parseInt(num);
-  fs.writeFileSync('./config.json', "" + JSON.stringify(config), () => {
+  fs.writeFile('./config.json', "" + JSON.stringify(config), () => {
     message.channel.send("Max Video Length set to " + config.videosAtATime + " mins");
   })
 }
@@ -349,6 +349,7 @@ function YoutubeSearch(searchKeywords, message, pageToken) {
                       }
                       if(config.videosAtATime) {
                         console.log("Videos At A Time: " + config.videosAtATime);
+                        console.log("typeof config.videosAtATime: " + config.videosAtATime);
                         if(tempQueue.length < config.videosAtATime) {
                           tempQueue.push(v);
                           console.log("Temp Queue: " + tempQueue.toString())
