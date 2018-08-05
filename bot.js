@@ -478,7 +478,7 @@ function PlayStream(video) {
 }
 
 process.on('SIGTERM', () => {
-  client.channels.find(val => val.name === config.announcementChannel);
+  let channel = client.channels.find(val => val.name === config.announcementChannel);
   if(channel) {
     channel.send("Going to take a nap real quick")
   }
