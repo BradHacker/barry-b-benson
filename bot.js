@@ -93,6 +93,9 @@ client.on('message', message => {
         case ("setVideosAtATime"):
           SetVideosAtATime(args[0], message)
           break;
+        case ("setTimezone"):
+          SetTimezone(args[0], message)
+          break;
         default:
           message.reply("It seems you have used a command that hasn't been created yet.")
           break;
@@ -473,6 +476,13 @@ function PlayStream(video) {
     }
   }
 }
+
+process.on('SIGTERM', () => {
+  client.channels.find(val => val.name === config.announcementChannel);
+  if(channel) {
+    channel.send("Going to take a nap real quick")
+  }
+});
 
 // function fixedFromCharCode(codePt) {
 //   if (codePt > 0xFFFF) {
