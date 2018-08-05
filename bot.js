@@ -8,6 +8,7 @@ const fs = require('fs');
 const moment = require('moment');
 require('dotenv').config();
 
+let config = require('./config.json');
 let non_christian_words = [];
 let voiceChannel = null;
 let ytAudioQueue = [];
@@ -16,7 +17,6 @@ let dispatcher;
 let announcementChannel = config.announcementChannel;
 let tempQueue = [];
 let songStartedAt = null;
-let config = require('./config.json');
 
 client.on('ready', () => {
   console.log('Beam me up Scotty!');
